@@ -299,10 +299,18 @@ function unlock() {
 function appendSources(sources) {
   const div = document.createElement('div');
   div.className = 'sources';
-  div.innerHTML = sources
-    .filter(s => s.link)
-    .map(s => `<a href="${s.link}" target="_blank" rel="noopener noreferrer">${s.title || s.link}</a>`)
-    .join('');
+
+  sources
+    .filter(s => s.link && /^https?:\/\//i.test(s.link))  // only allow http/https — blocks javascript: URIs
+    .forEach(s => {
+      const a = document.createElement('a');
+      a.href       = s.link;
+      a.target     = '_blank';
+      a.rel        = 'noopener noreferrer';
+      a.textContent = s.title || s.link;  // textContent never executes HTML
+      div.appendChild(a);
+    });
+
   if (div.children.length) {
     chatContainer.appendChild(div);
     chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -334,7 +342,6 @@ pttButton.addEventListener('touchcancel', (e) => {
   if (isRecording) stopRecording();
 }, { passive: false });
 
-// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // Clear button
 // ---------------------------------------------------------------------------

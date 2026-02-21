@@ -5,7 +5,7 @@ Routes:
   GET  /                  → Serve index.html
   GET  /health            → Model load status
   POST /api/transcribe    → Audio → transcript (Whisper STT)
-  POST /api/chat          → Transcript + history → reply + audio (Groq LLM + RAG + SpeechT5 TTS)
+  POST /api/chat          → Transcript + history → reply + audio (Groq LLM + RAG + Kokoro TTS)
 """
 
 import subprocess
@@ -31,9 +31,36 @@ from config import (
 
 app = Flask(__name__)
 app.secret_key = FLASK_SECRET_KEY
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10 MB upload limit
 
 # Groq client — initialized once, reused across requests
 groq_client = Groq(api_key=GROQ_API_KEY)
+
+_VALID_ROLES    = {"user", "assistant"}
+_MAX_HISTORY    = 40   # 20 turns × 2 messages each
+_MAX_MSG_CHARS  = 4000  # per-message content cap
+
+
+def _sanitize_history(raw):
+    """
+    Validate conversation history from the client.
+
+    Rejects entries with unknown roles (blocks system-prompt injection),
+    enforces a message cap (blocks token-cost abuse), and ensures each
+    content field is a plain string.
+    """
+    if not isinstance(raw, list):
+        return []
+    clean = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        role    = item.get("role")
+        content = item.get("content")
+        if role not in _VALID_ROLES or not isinstance(content, str):
+            continue
+        clean.append({"role": role, "content": content[:_MAX_MSG_CHARS]})
+    return clean[-_MAX_HISTORY:]  # keep only the most recent turns
 
 
 # ---------------------------------------------------------------------------
@@ -102,7 +129,7 @@ def chat():
         return jsonify({"error": "Invalid JSON body", "reply": "", "audio_b64": ""}), 400
 
     user_message = (data.get("message") or "").strip()
-    history = data.get("history") or []  # List of {role, content} dicts
+    history = _sanitize_history(data.get("history"))  # validated {role, content} list
 
     if not user_message:
         return jsonify({"error": "Empty message", "reply": "", "audio_b64": ""}), 400

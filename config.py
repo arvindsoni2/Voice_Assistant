@@ -17,8 +17,7 @@ SYSTEM_PROMPT = (
     "special formatting since your responses will be spoken aloud. Speak naturally."
 )
 
-WHISPER_SAMPLE_RATE = 16000  # Hz — Whisper requires 16kHz input
-TTS_SAMPLE_RATE     = 24000  # Hz — Kokoro outputs 24kHz
+TTS_SAMPLE_RATE = 24000  # Hz — Kokoro outputs 24kHz
 
 # Kokoro TTS voice settings
 # Voice options: af_heart, af_sky, af_bella, am_adam, am_michael (American)
