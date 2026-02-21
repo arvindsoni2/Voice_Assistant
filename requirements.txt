@@ -25,4 +25,4 @@ numpy==1.26.4
 scipy==1.11.4
 
 # RAG — real-time web search (no API key needed)
-duckduckgo-search>=6.0        # DDGS class, v6 API (keys: title/body/href)
+ddgs                          # DuckDuckGo search (renamed from duckduckgo-search)

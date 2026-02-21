@@ -1,9 +1,8 @@
 """
 rag.py — Real-time web search RAG using duckduckgo-search DDGS directly.
 
-Uses duckduckgo-search v6+ DDGS class directly (bypasses LangChain wrapper,
-which has compatibility issues with the v6 API key changes:
-  v6 keys: 'title', 'body', 'href'  — NOT 'snippet' / 'link')
+Uses the `ddgs` package (formerly `duckduckgo-search`) DDGS class directly.
+Result keys: 'title', 'body', 'href'
 
 Public API:
   search(query) → (context_str, sources_list)
@@ -24,7 +23,7 @@ def search(query: str) -> tuple:
                         or [] on failure.
     """
     try:
-        from duckduckgo_search import DDGS
+        from ddgs import DDGS
         with DDGS() as ddgs:
             results = list(ddgs.text(query, max_results=RAG_MAX_RESULTS))
     except Exception as e:
