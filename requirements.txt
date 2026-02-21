@@ -1,0 +1,28 @@
+# Web framework
+flask==3.0.3
+python-dotenv==1.0.1
+
+# LLM — Groq (free tier, OpenAI-compatible)
+groq>=0.9.0
+
+# HuggingFace ecosystem
+transformers==4.44.0
+accelerate==0.33.0
+kokoro>=0.9.0          # Kokoro-82M TTS
+misaki[en]             # Kokoro English phonemizer dependency
+
+# PyTorch (CPU-only build)
+# For GPU (CUDA 12.1): remove --extra-index-url and use torch==2.3.1+cu121
+torch==2.3.1
+torchaudio==2.3.1
+
+# Audio processing
+pydub==0.25.1    # WebM/Opus → PCM conversion (requires system ffmpeg)
+soundfile==0.12.1
+
+# Numerical (likely already installed; pinned for consistency)
+numpy==1.26.4
+scipy==1.11.4
+
+# RAG — real-time web search (no API key needed)
+duckduckgo-search>=6.0        # DDGS class, v6 API (keys: title/body/href)
