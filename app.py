@@ -138,20 +138,29 @@ def chat():
         return jsonify({"error": "Models still loading", "reply": "", "audio_b64": ""}), 503
 
     # --- RAG: single web search → context string + source links ---
+    import datetime
+    today = datetime.date.today().strftime("%B %d, %Y")
+
     sources = []
     if RAG_ENABLED:
         context, sources = rag.search(user_message)
         if context:
             augmented_system = (
-                SYSTEM_PROMPT + "\n\n"
-                + context + "\n\n"
-                + "Use the above web search results to give an accurate, up-to-date answer. "
-                + "If the results are not relevant to the question, rely on your training knowledge."
+                SYSTEM_PROMPT
+                + f"\n\nToday's date is {today}."
+                + "\n\n"
+                + context
+                + "\n\n"
+                + "IMPORTANT: The web search results above contain current, real-time information. "
+                + "You MUST base your answer on these results rather than your training knowledge, "
+                + "especially for anything time-sensitive (prices, events, news, versions, etc.). "
+                + "Cite the information naturally in your spoken response. "
+                + "Only fall back to your training knowledge if the search results are clearly unrelated to the question."
             )
         else:
-            augmented_system = SYSTEM_PROMPT
+            augmented_system = SYSTEM_PROMPT + f"\n\nToday's date is {today}."
     else:
-        augmented_system = SYSTEM_PROMPT
+        augmented_system = SYSTEM_PROMPT + f"\n\nToday's date is {today}."
 
     # Build Groq messages — augmented system prompt first, then history, then new user turn
     messages = (
@@ -166,7 +175,7 @@ def chat():
             model=GROQ_MODEL,
             messages=messages,
             max_tokens=MAX_TOKENS,
-            temperature=0.7,
+            temperature=0.3,
         )
         reply_text = response.choices[0].message.content.strip()
     except Exception as e:
